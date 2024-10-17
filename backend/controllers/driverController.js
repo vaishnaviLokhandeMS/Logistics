@@ -1,0 +1,172 @@
+const Driver = require('../models/driverModel');  // Driver model
+const Booking = require('../models/bookingModel');  // Booking model
+const jwt = require('jsonwebtoken');
+
+exports.loginDriver = async (req, res) => {
+    const { email, password } = req.body;
+
+    try {
+        // Find driver by email
+        const driver = await Driver.findOne({ email });
+
+        if (!driver) {
+            return res.status(404).json({ message: 'Driver not found' });
+        }
+
+        // Directly compare passwords (since password is stored in plain text)
+        if (password !== driver.password) {
+            return res.status(401).json({ message: 'Invalid password' });
+        }
+
+        // Generate JWT token with driver ID
+        const token = jwt.sign({ id: driver._id, role: 'driver' }, process.env.JWT_SECRET, {
+            expiresIn: '1h',
+        });
+        
+        // Respond with token and driver_id (NOT _id)
+        res.status(200).json({ message: 'Login successful', token, driverId: driver.driver_id });
+    } catch (error) {
+        console.error('Error logging in driver:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+
+// Fetch new bookings with status 'pending'
+exports.getPendingBookings = async (req, res) => {
+    try {
+        const { driverId } = req.params;
+
+        // Fetch all pending bookings
+        const pendingBookings = await Booking.find({ status: 'pending' });
+
+        res.status(200).json({ pendingBookings });
+    } catch (error) {
+        console.error('Error fetching pending bookings:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+exports.acceptBooking = async (req, res) => {
+    const { bookingId, driverId, vehicleType } = req.body;  // Add vehicleType in request
+
+    console.log('Received bookingId:', bookingId);
+    console.log('Received driverId:', driverId);
+
+    try {
+        // Find the driver by driver_id
+        const driver = await Driver.findOne({ driver_id: driverId });
+
+        if (!driver) {
+            return res.status(404).json({ message: 'Driver not found' });
+        }
+
+        // Update the booking with the driverId and change its status to 'en_route'
+        const booking = await Booking.findOneAndUpdate(
+            { booking_id: bookingId },
+            { 
+                status: 'en_route', 
+                driver_id: driverId  // Store driver_id in the booking
+            },
+            { new: true }
+        );
+
+        if (!booking) {
+            return res.status(404).json({ message: 'Booking not found' });
+        }
+
+        // Fetch and update the VehicleDemand for the accepted vehicle type
+        const vehicleDemand = await VehicleDemand.findOne({ vehicle_type: vehicleType });
+        if (vehicleDemand) {
+            vehicleDemand.available -= 1;
+            vehicleDemand.for_transportation += 1;
+            vehicleDemand.current_demand = Math.max(0, vehicleDemand.current_demand - 1);  // Ensure demand doesn't go negative
+            await vehicleDemand.save();
+        }
+
+        res.status(200).json({ message: 'Booking accepted', booking });
+    } catch (error) {
+        console.error('Error accepting booking:', error);  // Log the error for more insights
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+
+exports.getActiveBookings = async (req, res) => {
+    try {
+        const { driverId } = req.params;
+
+        // Fetch bookings where the status is either 'en_route' or 'goods_collected' for the specific driver
+        const activeBookings = await Booking.find({ 
+            driver_id: driverId, 
+            status: { $in: ['en_route', 'goods_collected'] }  // Check for either of the two statuses
+        });
+
+        if (!activeBookings || activeBookings.length === 0) {
+            return res.status(404).json({ message: 'No active bookings found' });
+        }
+
+        res.status(200).json({ activeBookings });
+    } catch (error) {
+        console.error('Error fetching active bookings:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+
+
+exports.updateJobStatus = async (req, res) => {
+    const { bookingId, status, vehicleType } = req.body;  // Add vehicleType in request body
+
+    try {
+        // Find the booking by booking_id and update its status
+        const updatedBooking = await Booking.findOneAndUpdate(
+            { booking_id: bookingId },  // Find the booking by booking_id
+            { status: status },  // Update the status with the new status provided by the driver
+            { new: true }  // Return the updated document after modification
+        );
+
+        if (!updatedBooking) {
+            return res.status(404).json({ message: 'Booking not found' });  // Return error if no booking is found
+        }
+
+        // Check if the status is 'delivered' to update vehicle demand
+        if (status === 'delivered') {
+            const vehicleDemand = await VehicleDemand.findOne({ vehicle_type: vehicleType });
+            if (vehicleDemand) {
+                vehicleDemand.available += 1;
+                vehicleDemand.for_transportation = Math.max(0, vehicleDemand.for_transportation - 1);  // Ensure the number doesn't go negative
+                await vehicleDemand.save();
+            }
+        }
+
+        // Respond with the updated booking
+        res.status(200).json({ message: 'Booking status updated', booking: updatedBooking });
+    } catch (error) {
+        console.error('Error updating booking status:', error);  // Log any errors that occur
+        res.status(500).json({ message: 'Server error' });  // Return server error if something goes wrong
+    }
+};
+
+
+
+// Fetch completed bookings (status: delivered)
+exports.getCompletedBookings = async (req, res) => {
+    const { driverId } = req.params;
+
+    try {
+        const completedBookings = await Booking.find({
+            status: 'delivered', 
+            driver_id: driverId 
+        });
+
+        if (!completedBookings || completedBookings.length === 0) {
+            return res.status(404).json({ message: 'No completed bookings found' });
+        }
+
+        res.status(200).json({ completedBookings });
+    } catch (error) {
+        console.error('Error fetching completed bookings:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
