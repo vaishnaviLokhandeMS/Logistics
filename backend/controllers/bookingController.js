@@ -43,85 +43,56 @@ const calculateCost = (distance, vehicleType, currentDemand) => {
   return finalCost;
 };
 
+// Booking function to estimate price and store booking
 exports.bookVehicle = async (req, res) => {
-  const { pickupLocation, dropoffLocation, vehicleType } = req.body;
-
-  console.log('Received booking request:', req.body);
-
-  try {
-    const userId = req.user ? req.user.id : uuidv4(); // Generate UUID if no authentication
-
-    // 1. Calculate distance
-    console.log('Calculating distance...');
-    const distanceInKm = await calculateDistance(pickupLocation, dropoffLocation);
-
-    // 2. Fetch current demand for the vehicle type and update availability
-    console.log(`Fetching demand for vehicle type: ${vehicleType}`);
-    const demandData = await VehicleDemand.findOne({ vehicle_type: vehicleType });
-
-    if (!demandData) {
-      return res.status(400).json({ message: `Vehicle type ${vehicleType} not found.` });
+    const { pickupLocation, dropoffLocation, vehicleType } = req.body;
+  
+    console.log('Received booking request:', req.body);
+  
+    try {
+      const userId = req.user ? req.user.id : uuidv4(); // Generate UUID if no authentication
+  
+      // 1. Calculate distance
+      console.log('Calculating distance...');
+      const distanceInKm = await calculateDistance(pickupLocation, dropoffLocation);
+  
+      // 2. Fetch current demand for the vehicle type
+      console.log(`Fetching demand for vehicle type: ${vehicleType}`);
+      const demandData = await VehicleDemand.findOne({ vehicle_type: vehicleType });
+      const currentDemand = demandData ? demandData.current_demand : 0;
+      console.log(`Current demand for ${vehicleType}: ${currentDemand}`);
+  
+      // 3. Calculate the price
+      console.log('Calculating price...');
+      const cost = calculateCost(distanceInKm, vehicleType, currentDemand);
+  
+      // 4. Store booking details in MongoDB
+      console.log('Storing booking in MongoDB...');
+      const booking = new Booking({
+        booking_id: uuidv4(),
+        user_id: userId,
+        pickup_location: pickupLocation,
+        dropoff_location: dropoffLocation,
+        vehicle_type: vehicleType,
+        distance: distanceInKm,
+        cost,
+        current_demand: currentDemand,
+        driver_id: 'driver123', // Assume a driver is assigned, ideally fetched dynamically
+        status: 'pending',
+        created_at: new Date(),
+      });
+  
+      await booking.save();
+      console.log('Booking saved successfully:', booking);
+  
+      // 5. Respond with the calculated cost and distance
+      console.log('Booking successful');
+      res.status(201).json({ message: 'Booking successful', cost, distance: distanceInKm, vehicleType, booking_id: booking.booking_id });
+    } catch (error) {
+      console.error('Error processing booking:', error);
+      res.status(500).json({ error: 'Error processing booking' });
     }
-
-    const currentDemand = demandData.current_demand;
-    const availableVehicles = demandData.available;
-
-    if (availableVehicles <= 0) {
-      return res.status(400).json({ message: `No available ${vehicleType} vehicles at the moment.` });
-    }
-
-    console.log(`Current demand for ${vehicleType}: ${currentDemand}`);
-    console.log(`Available ${vehicleType} vehicles: ${availableVehicles}`);
-
-    // 3. Update current demand and available count in the vehicle demand collection
-    const updatedVehicleDemand = await VehicleDemand.findOneAndUpdate(
-      { vehicle_type: vehicleType },
-      { 
-        $inc: { current_demand: 1, available: -1 } // Increment current demand and decrement available
-      },
-      { new: true } // Return the updated document
-    );
-
-    console.log(`Updated demand for ${vehicleType}: ${updatedVehicleDemand.current_demand}`);
-    console.log(`Updated available ${vehicleType} vehicles: ${updatedVehicleDemand.available}`);
-
-    // 4. Calculate the price
-    console.log('Calculating price...');
-    const cost = calculateCost(distanceInKm, vehicleType, currentDemand);
-
-    // 5. Store booking details in MongoDB
-    console.log('Storing booking in MongoDB...');
-    const booking = new Booking({
-      booking_id: uuidv4(),
-      user_id: userId,
-      pickup_location: pickupLocation,
-      dropoff_location: dropoffLocation,
-      vehicle_type: vehicleType,
-      distance: distanceInKm,
-      cost,
-      current_demand: updatedVehicleDemand.current_demand,
-      driver_id: 'driver123', // Assume a driver is assigned, ideally fetched dynamically
-      status: 'pending',
-      created_at: new Date(),
-    });
-
-    await booking.save();
-    console.log('Booking saved successfully:', booking);
-
-    // 6. Respond with the calculated cost and distance
-    console.log('Booking successful');
-    res.status(201).json({
-      message: 'Booking successful',
-      cost,
-      distance: distanceInKm,
-      vehicleType,
-      booking_id: booking.booking_id,
-    });
-  } catch (error) {
-    console.error('Error processing booking:', error);
-    res.status(500).json({ error: 'Error processing booking' });
-  }
-};
+  };
   
 // Track transportation function
 exports.trackTransportation = async (req, res) => {

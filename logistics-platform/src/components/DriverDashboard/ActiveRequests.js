@@ -16,10 +16,10 @@ const ActiveRequests = () => {
   }, [driverId]);
 
   // Handle status change immediately when a new status is selected from the dropdown
-  const handleStatusChange = async (jobId, newStatus) => {
+  const handleStatusChange = async (jobId, newStatus, vehicleType) => {
     try {
       // Update the job status via API
-      const response = await updateJobStatus(jobId, newStatus);  // No need to send driverId here
+      const response = await updateJobStatus(jobId, newStatus, vehicleType);  // No need to send driverId here
 
       if (response) {
         if (newStatus === 'delivered') {
@@ -74,7 +74,7 @@ const ActiveRequests = () => {
                   <td className="py-3 px-4 border border-gray-600">
                     <select
                       value={job.status}
-                      onChange={(e) => handleStatusChange(job.booking_id, e.target.value)}
+                      onChange={(e) => handleStatusChange(job.booking_id, e.target.value, job.vehicle_type)}
                       className="bg-gray-700 text-white p-2 border border-gray-600 rounded-lg"
                     >
                       <option value="en_route">En Route to Pickup</option>
@@ -84,7 +84,7 @@ const ActiveRequests = () => {
                   </td>
                   <td className="py-3 px-4 border border-gray-600">
                     <button
-                      onClick={() => handleStatusChange(job.booking_id, 'delivered')}
+                      onClick={() => handleStatusChange(job.booking_id, 'delivered',  job.vehicle_type)}
                       className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
                     >
                       Mark as Delivered

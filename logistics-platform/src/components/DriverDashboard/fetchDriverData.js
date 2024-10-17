@@ -59,14 +59,14 @@ export const fetchNewRequests = async (setNewRequests) => {
   };
   
   // Update job (booking) status
-  export const updateJobStatus = async (bookingId, newStatus) => {
+  export const updateJobStatus = async (bookingId, newStatus, vehicleType) => {
     try {
       const response = await fetch('http://localhost:5000/api/drivers/update-status', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ bookingId, status: newStatus }),  // Send bookingId and new status
+        body: JSON.stringify({ bookingId, status: newStatus, vehicleType}),  // Send bookingId and new status
       });
   
       const data = await response.json();

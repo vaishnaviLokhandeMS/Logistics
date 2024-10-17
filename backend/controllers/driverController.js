@@ -76,7 +76,16 @@ exports.acceptBooking = async (req, res) => {
             return res.status(404).json({ message: 'Booking not found' });
         }
 
-        // 3. Fetch and update the VehicleDemand for the accepted vehicle type
+        // 3. Update driver's requests_accepted and status without revalidating the entire document
+        await Driver.updateOne(
+            { driver_id: driverId },
+            {
+                $inc: { requests_accepted: 1 },  // Increment requests_accepted
+                $set: { status: 'busy' }  // Set status to busy
+            }
+        );
+
+        // 4. Fetch and update the VehicleDemand for the accepted vehicle type
         const vehicleDemand = await VehicleDemand.findOne({ vehicle_type: vehicleType });
         if (vehicleDemand) {
             vehicleDemand.available -= 1;  // Decrease available vehicles by 1
@@ -88,7 +97,7 @@ exports.acceptBooking = async (req, res) => {
             console.log(`Vehicle type ${vehicleType} not found in demand collection.`);
         }
 
-        // 4. Respond with the updated booking details
+        // 5. Respond with the updated booking details
         res.status(200).json({ message: 'Booking accepted', booking });
     } catch (error) {
         console.error('Error accepting booking:', error);  // Log the error for debugging
@@ -117,8 +126,6 @@ exports.getActiveBookings = async (req, res) => {
     }
 };
 
-
-
 exports.updateJobStatus = async (req, res) => {
     const { bookingId, status, vehicleType } = req.body;  // Add vehicleType in request body
 
@@ -141,10 +148,11 @@ exports.updateJobStatus = async (req, res) => {
 
         console.log('Booking found and updated:', updatedBooking);
 
-        // 2. Check if the status is 'delivered' to update vehicle demand
+        // 2. Check if the status is 'delivered' to update vehicle demand and driver's requests_delivered
         if (status === 'delivered') {
             console.log('Status is delivered, updating vehicle demand for type:', vehicleType);
 
+            // Update VehicleDemand
             const vehicleDemand = await VehicleDemand.findOne({ vehicle_type: vehicleType });
             if (vehicleDemand) {
                 console.log('Vehicle demand found for vehicleType:', vehicleType);
@@ -157,6 +165,20 @@ exports.updateJobStatus = async (req, res) => {
             } else {
                 console.log('Vehicle demand not found for vehicleType:', vehicleType);
             }
+
+            // Update Driver's requests_delivered using `findOneAndUpdate`
+            const driverId = updatedBooking.driver_id;
+            const driver = await Driver.findOneAndUpdate(
+                { driver_id: driverId },  // Find the driver by driver_id
+                { $inc: { requests_delivered: 1 } },  // Increment requests_delivered by 1
+                { new: true }  // Return the updated document after modification
+            );
+
+            if (driver) {
+                console.log('Driver requests_delivered incremented:', driver.requests_delivered);
+            } else {
+                console.log('Driver not found for driverId:', driverId);
+            }
         }
 
         // 3. Respond with the updated booking
@@ -166,7 +188,6 @@ exports.updateJobStatus = async (req, res) => {
         res.status(500).json({ message: 'Server error' });  // Return server error if something goes wrong
     }
 };
-
 
 // Fetch completed bookings (status: delivered)
 exports.getCompletedBookings = async (req, res) => {

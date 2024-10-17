@@ -32,6 +32,7 @@
           body: JSON.stringify({
             bookingId: selectedBooking.booking_id,
             driverId: driverId,  // Replace with actual driverId from local storage or context
+            vehicleType: selectedBooking.vehicle_type,
           }),
         });
 

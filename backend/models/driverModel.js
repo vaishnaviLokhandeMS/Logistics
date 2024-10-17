@@ -8,8 +8,8 @@ const driverSchema = new mongoose.Schema({
     phone: { type: String, required: true },
     driver_id: { type: String, required: true, unique: true },
     location: {
-        lat: { type: Number, required: true },  // Latitude
-        long: { type: Number, required: true }  // Longitude
+        lat: { type: Number },  // Latitude
+        long: { type: Number}  // Longitude
     },
     status: {
         type: String, 

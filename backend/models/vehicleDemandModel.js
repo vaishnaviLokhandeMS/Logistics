@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 
+// Define Vehicle Demand Schema
 const vehicleDemandSchema = new mongoose.Schema({
   vehicle_type: {
     type: String,
@@ -23,9 +24,19 @@ const vehicleDemandSchema = new mongoose.Schema({
     type: Number,
     required: true,  // Number of vehicles out for transportation
     default: 0
+  },
+  total_bookings: {
+    type: Number,
+    required: true,  // Total bookings made so far for this vehicle type
+    default: 0
+  }, 
+  total_today: {
+    type: Number,
+    required: true,  // Total bookings made so far for this vehicle type
+    default: 0
   }
 });
 
-const VehicleDemand = mongoose.model('vechicle_demands', vehicleDemandSchema);
+const VehicleDemand = mongoose.model('vehicle_demands', vehicleDemandSchema);
 
 module.exports = VehicleDemand;
