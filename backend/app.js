@@ -38,16 +38,16 @@ const userRoutes = require('./routes/userRoutes');  // Import user routes
 const driverRoutes = require('./routes/driverRoutes');  // Import driver routes
 const adminRoutes = require('./routes/adminRoutes');  // Import admin routes
 const autocompleteRoutes = require('./routes/autocomplete');
-const vechicle = require('./routes/vehicleRoutes')
+const vehicleRoutes = require('./routes/vehicleRoutes');
 
 
 // Use Routes
 app.use('/api/bookings', bookingRoutes);  // Booking API routes
 app.use('/api/users', userRoutes);  // User API routes
 app.use('/api/drivers', driverRoutes);  // Driver API routes
-app.use('/api/admin', adminRoutes);  // Admin API routes
+app.use('/api/admins', adminRoutes);  // Admin API routes
 app.use('/api/locations', autocompleteRoutes); 
-app.use('/api/demand', vechicle);
+app.use('/api/admins', vehicleRoutes);
 
 // Error Handling Middleware
 app.use((err, req, res, next) => {

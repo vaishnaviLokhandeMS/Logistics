@@ -12,6 +12,7 @@ import ActiveRequests from './components/DriverDashboard/ActiveRequests';
 import CompletedRequests from './components/DriverDashboard/CompletedRequests';
 import TrackTransportation from './components/UserDashboard/TrackTransportation';
 import VehicleDemand from './components/DriverDashboard/VehicleDemand'; 
+import VehiclePieCharts from './components/AdminDashboard/VehiclePieCharts';
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
         <Route path="/track/:bookingId" element={<TrackTransportation />} />
         <Route path="/vechicle-demand" element={<VehicleDemand />} />
+        <Route path="/admin/driver-activity" element={<VehiclePieCharts />} />
       </Routes>
     </Router>
   );

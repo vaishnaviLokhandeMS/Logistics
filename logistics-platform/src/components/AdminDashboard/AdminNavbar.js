@@ -11,7 +11,7 @@ const AdminNavbar = () => {
 
       {/* Navigation Links */}
       <div className="flex justify-center space-x-6">
-        <Link to="/admin/available-vehicles" className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+        <Link to="/admin/driver-activity" className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
           Available Vehicles
         </Link>
         <Link to="/admin/driver-activity" className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">

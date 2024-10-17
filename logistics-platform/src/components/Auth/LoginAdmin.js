@@ -10,7 +10,7 @@ const LoginAdmin = () => {
   const handleLogin = async (email, password) => {
     try {
       // Build the URL for the admin login API
-      const url = `http://localhost:5000/api/admin/login`;  // Updated API endpoint for admin
+      const url = `http://localhost:5000/api/admins/login`;  // Updated API endpoint for admin
   
       const response = await fetch(url, {
         method: 'POST',

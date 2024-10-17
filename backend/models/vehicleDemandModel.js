@@ -26,6 +26,6 @@ const vehicleDemandSchema = new mongoose.Schema({
   }
 });
 
-const VehicleDemand = mongoose.model('vechicle_demand', vehicleDemandSchema);
+const VehicleDemand = mongoose.model('vechicle_demands', vehicleDemandSchema);
 
 module.exports = VehicleDemand;

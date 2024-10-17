@@ -20,4 +20,4 @@ const AdminSchema = new mongoose.Schema({
   fleet: [FleetSchema],
 });
 
-module.exports = mongoose.model('Admin', AdminSchema);
+module.exports = mongoose.model('admins', AdminSchema);
