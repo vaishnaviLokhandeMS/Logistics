@@ -1,4 +1,5 @@
 const Driver = require('../models/driverModel');
+const VehicleDemand = require('../models/vehicleDemandModel');
 
 // Fetch driver suggestions based on name or driver_id prefix
 exports.getDriverSuggestions = async (req, res) => {
@@ -39,3 +40,18 @@ exports.getDriverById = async (req, res) => {
     res.status(500).json({ error: 'Server error while fetching driver details' });
   }
 };
+
+exports.getTotalBookings = async (req, res) => {
+    try {
+        // Fetch vehicle types and total bookings
+        const totalBookings = await VehicleDemand.find({}, { vehicle_type: 1, total_bookings: 1 });
+        
+        console.log(totalBookings); // For debugging
+        res.status(200).json(totalBookings);
+    } catch (error) {
+        console.error('Error fetching total bookings:', error);
+        res.status(500).json({ message: 'Server error while fetching total bookings' });
+    }
+};
+
+  

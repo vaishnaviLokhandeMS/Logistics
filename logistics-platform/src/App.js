@@ -13,6 +13,7 @@ import CompletedRequests from './components/DriverDashboard/CompletedRequests';
 import TrackTransportation from './components/UserDashboard/TrackTransportation';
 import VehicleDemand from './components/DriverDashboard/VehicleDemand'; 
 import DriverActivity from './components/AdminDashboard/DriverActivity';
+import BookingStatsChart from './components/AdminDashboard/BookingStatsChart';
 import VehiclePieCharts from './components/AdminDashboard/VehiclePieCharts';
 
 function App() {
@@ -33,6 +34,7 @@ function App() {
         <Route path="/vechicle-demand" element={<VehicleDemand />} />
         <Route path="/admin/driver-activity" element={<DriverActivity />} />
         <Route path="/admin/available-vechicles" element={<VehiclePieCharts />} />
+        <Route path="/admin/booking-data" element={<BookingStatsChart />} />
       </Routes>
     </Router>
   );

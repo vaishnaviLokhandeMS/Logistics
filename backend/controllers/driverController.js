@@ -87,11 +87,14 @@ exports.acceptBooking = async (req, res) => {
 
         // 4. Fetch and update the VehicleDemand for the accepted vehicle type
         const vehicleDemand = await VehicleDemand.findOne({ vehicle_type: vehicleType });
+        const today = new Date().toISOString().split('T')[0];  // Get today's date in 'YYYY-MM-DD' format
+        console.log('Today:', today);
+
         if (vehicleDemand) {
             vehicleDemand.available -= 1;  // Decrease available vehicles by 1
             vehicleDemand.for_transportation += 1;  // Increase for_transportation by 1
             vehicleDemand.current_demand = Math.max(0, vehicleDemand.current_demand - 1);  // Ensure current_demand doesn't go negative
-
+            vehicleDemand.total_bookings.set(today, (vehicleDemand.total_bookings.get(today) || 0) + 1);  // Increment today's bookings by 1
             await vehicleDemand.save();  // Save the updated vehicle demand document
         } else {
             console.log(`Vehicle type ${vehicleType} not found in demand collection.`);
@@ -159,6 +162,7 @@ exports.updateJobStatus = async (req, res) => {
 
                 vehicleDemand.available += 1;
                 vehicleDemand.for_transportation = Math.max(0, vehicleDemand.for_transportation - 1);  // Ensure the number doesn't go negative
+                vehicleDemand.total_delivered += 1;
                 await vehicleDemand.save();
 
                 console.log('Vehicle demand updated:', vehicleDemand);
@@ -166,7 +170,7 @@ exports.updateJobStatus = async (req, res) => {
                 console.log('Vehicle demand not found for vehicleType:', vehicleType);
             }
 
-            // Update Driver's requests_delivered using `findOneAndUpdate`
+            // Update Driver's requests_delivered using findOneAndUpdate
             const driverId = updatedBooking.driver_id;
             const driver = await Driver.findOneAndUpdate(
                 { driver_id: driverId },  // Find the driver by driver_id
