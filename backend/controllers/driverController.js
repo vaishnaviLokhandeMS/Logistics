@@ -214,3 +214,68 @@ exports.getCompletedBookings = async (req, res) => {
         res.status(500).json({ message: 'Server error' });
     }
 };
+
+
+
+exports.updateDriverLocation = async (req, res) => {
+    const { driverId, lat, long } = req.body;
+
+    try {
+        // Find driver and update location
+        const driver = await Driver.findOneAndUpdate(
+            { driver_id: driverId },
+            { location: { lat, long } },  // Update the location field
+            { new: true }
+        );
+
+        if (!driver) {
+            return res.status(404).json({ message: 'Driver not found' });
+        }
+
+        res.status(200).json({ message: 'Driver location updated', driver });
+    } catch (error) {
+        console.error('Error updating driver location:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+
+exports.getDriverLocation = async (req, res) => {
+    const { driverId } = req.params;
+
+    try {
+        const driver = await Driver.findOne({ driver_id: driverId });
+        if (!driver) {
+            return res.status(404).json({ message: 'Driver not found' });
+        }
+        res.status(200).json({ location: driver.location });
+    } catch (error) {
+        console.error('Error fetching driver location:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+exports.getDriverLocationByBookingId = async (req, res) => {
+    const { bookingId } = req.params;
+
+    try {
+        // Find the booking by ID to get the driverId
+        const booking = await Booking.findOne({ booking_id: bookingId });
+
+        if (!booking) {
+            return res.status(404).json({ message: 'Booking not found' });
+        }
+
+        // Find the driver using the driver_id
+        const driver = await Driver.findOne({ driver_id: booking.driver_id });
+
+        if (!driver) {
+            return res.status(404).json({ message: 'Driver not found' });
+        }
+
+        res.status(200).json({ location: driver.location });
+    } catch (error) {
+        console.error('Error fetching driver location:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
