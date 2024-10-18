@@ -160,12 +160,13 @@ exports.updateJobStatus = async (req, res) => {
             if (vehicleDemand) {
                 console.log('Vehicle demand found for vehicleType:', vehicleType);
 
+                // Increment available vehicles and total delivered for this vehicle type
                 vehicleDemand.available += 1;
                 vehicleDemand.for_transportation = Math.max(0, vehicleDemand.for_transportation - 1);  // Ensure the number doesn't go negative
                 vehicleDemand.total_delivered += 1;
                 await vehicleDemand.save();
 
-                console.log('Vehicle demand updated:', vehicleDemand);
+                console.log('Vehicle demand updated (total_delivered incremented):', vehicleDemand);
             } else {
                 console.log('Vehicle demand not found for vehicleType:', vehicleType);
             }

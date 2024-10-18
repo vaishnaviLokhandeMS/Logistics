@@ -23,9 +23,6 @@ const AdminNavbar = () => {
         <Link to="/admin/trips-completed" className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
           Trips Completed
         </Link>
-        <Link to="/admin/driver-performance" className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
-          Driver Performance
-        </Link>
       </div>
     </div>
   );

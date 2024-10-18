@@ -15,6 +15,7 @@ import VehicleDemand from './components/DriverDashboard/VehicleDemand';
 import DriverActivity from './components/AdminDashboard/DriverActivity';
 import BookingStatsChart from './components/AdminDashboard/BookingStatsChart';
 import VehiclePieCharts from './components/AdminDashboard/VehiclePieCharts';
+import DeliveryStatsChart from './components/AdminDashboard/DeliveryStatsChart';
 
 function App() {
   return (
@@ -35,6 +36,7 @@ function App() {
         <Route path="/admin/driver-activity" element={<DriverActivity />} />
         <Route path="/admin/available-vechicles" element={<VehiclePieCharts />} />
         <Route path="/admin/booking-data" element={<BookingStatsChart />} />
+        <Route path="/admin/trips-completed" element={<DeliveryStatsChart />} />
       </Routes>
     </Router>
   );

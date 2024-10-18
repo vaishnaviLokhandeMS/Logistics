@@ -34,6 +34,11 @@ const vehicleDemandSchema = new mongoose.Schema({
     type: Number,
     required: true,  // Total bookings made so far for this vehicle type
     default: 0
+  },
+  total_delivered: {
+    type: Number,
+    required: true,  
+    default: 0
   }
 });
 

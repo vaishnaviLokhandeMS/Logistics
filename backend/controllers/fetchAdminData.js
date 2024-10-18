@@ -54,4 +54,18 @@ exports.getTotalBookings = async (req, res) => {
     }
 };
 
+
+exports.getTotalDelivered = async (req, res) => {
+    try {
+        // Fetch vehicle types and total bookings
+        const totalBookings = await VehicleDemand.find({}, { vehicle_type: 1, total_delivered: 1 });
+        
+        console.log(totalBookings); // For debugging
+        res.status(200).json(totalBookings);
+    } catch (error) {
+        console.error('Error fetching total bookings:', error);
+        res.status(500).json({ message: 'Server error while fetching total bookings' });
+    }
+};
+
   
